@@ -88,12 +88,9 @@ void CheckLiveActivations(int blockHeight)
         if (OMNICORE_VERSION < liveActivation.minClientVersion) {
             std::string msgText = strprintf("Shutting down due to unsupported feature activation (%d: %s)", liveActivation.featureId, liveActivation.featureName);
             PrintToLog(msgText);
-            PrintToConsole(msgText);
-            // if (!GetBoolArg("-overrideforcedshutdown", false)) {
-            //     boost::filesystem::path persistPath = GetDataDir() / "MP_persist";
-            //     if (boost::filesystem::exists(persistPath)) boost::filesystem::remove_all(persistPath); // prevent the node being restarted without a reparse after forced shutdown
-            //     AbortNode(msgText, msgText);
-            // }
+            if (!gArgs.GetBoolArg("-overrideforcedshutdown", false)) {
+                //AbortNode(msgText, msgText);  TODO FIX AbortNode
+            }
         }
         PendingActivationCompleted(liveActivation);
     }
@@ -160,27 +157,24 @@ bool CheckActivationAuthorization(const std::string& sender)
     // use -omniactivationallowsender for testing
 
     // Add manually whitelisted sources
-    // if (mapArgs.count("-omniactivationallowsender")) {
-    //     const std::vector<std::string>& sources = mapMultiArgs["-omniactivationallowsender"];
-    //
-    //     for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
-    //         whitelisted.insert(*it);
-    //     }
-    // }
+    if (gArgs.IsArgSet("-omniactivationallowsender")) {
+        const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationallowsender");
+
+        for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
+            whitelisted.insert(*it);
+        }
+    }
 
     // Remove manually ignored sources
-    // if (mapArgs.count("-omniactivationignoresender")) {
-    //     const std::vector<std::string>& sources = mapMultiArgs["-omniactivationignoresender"];
-    //
-    //     for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
-    //         whitelisted.erase(*it);
-    //     }
-    // }
+    if (gArgs.IsArgSet("-omniactivationignoresender")) {
+        const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationignoresender");
 
-    bool fAuthorized = (whitelisted.count(sender) ||
-                        whitelisted.count("any"));
+        for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
+            whitelisted.erase(*it);
+        }
+    }
 
-    return fAuthorized;
+    return (whitelisted.count(sender) || whitelisted.count("any"));
 }
 
 /**
@@ -205,33 +199,32 @@ bool CheckDeactivationAuthorization(const std::string& sender)
       "16oDZYCspsczfgKXVj3xyvsxH21NpEj94F" // Adam Chamely - adam@omni.foundation - Project maintainer, developer
     ],
     */
+
     whitelisted.insert("34kwkVRSvFVEoUwcQSgpQ4ZUasuZ54DJLD");
 
     // Testnet / Regtest
     // use -omniactivationallowsender for testing
 
-    // Add manually whitelisted sources - custom sources affect both activation and deactivation
-    // if (mapArgs.count("-omniactivationallowsender")) {
-    //     const std::vector<std::string>& sources = mapMultiArgs["-omniactivationallowsender"];
-    //
-    //     for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
-    //         whitelisted.insert(*it);
-    //     }
-    // }
+    //Add manually whitelisted sources - custom sources affect both activation and deactivation
+    if (gArgs.IsArgSet("-omniactivationallowsender")) {
+        const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationallowsender");
+
+        for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
+            whitelisted.insert(*it);
+        }
+    }
 
     // Remove manually ignored sources - custom sources affect both activation and deactivation
-    // if (mapArgs.count("-omniactivationignoresender")) {
-    //     const std::vector<std::string>& sources = mapMultiArgs["-omniactivationignoresender"];
-    //
-    //     for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
-    //         whitelisted.erase(*it);
-    //     }
-    // }
+    if (gArgs.IsArgSet("-omniactivationignoresender")) {
+        const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationignoresender");
 
-    bool fAuthorized = (whitelisted.count(sender) ||
-                        whitelisted.count("any"));
+        for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
+            whitelisted.erase(*it);
+        }
+    }
 
-    return fAuthorized;
+    return (whitelisted.count(sender) || whitelisted.count("any"));
+
 }
 
 } // namespace mastercore

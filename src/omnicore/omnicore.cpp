@@ -565,9 +565,6 @@ void CheckWalletUpdate(bool forceUpdate)
 /**
  * Returns the encoding class, used to embed a payload.
  *
- *   0 None
- *   1 Class A (p2pkh)
- *   2 Class B (multisig)
  *   3 Class C (op-return)
  */
 int mastercore::GetEncodingClass(const CTransaction& tx, int nBlock)
@@ -681,7 +678,7 @@ static bool FillTxInputCache(const CTransaction& tx)
         uint256 hashBlock = uint256();
 
         if (!GetTransaction(txIn.prevout.hash, txPrev, Params().GetConsensus(), hashBlock, true)) {
-           return false;
+            return false;
         }
 
         if (txPrev.get()->vout.size() <= nOut){
@@ -1439,8 +1436,7 @@ static int msc_file_load(const string &filename, int what, bool verifyHash = fal
       }
   }
 
-  PrintToLog("%s(%s), loaded lines= %d, res= %d\n", __FUNCTION__, filename, lines, res);
-  LogPrintf("%s(): file: %s , loaded lines= %d, res= %d\n", __FUNCTION__, filename, lines, res);
+  PrintToLog("%s(): file: %s, loaded lines= %d, res= %d\n", __func__, filename, lines, res);
 
   return res;
 }
@@ -1474,7 +1470,6 @@ static int load_most_relevant_state()
         return -1;
     }
 
-    // TODO: make this work out
     while (nullptr != spBlockIndex && !chainActive.Contains(spBlockIndex))
     {
         int remainingSPs = _my_sps->popBlock(spBlockIndex->GetBlockHash());
@@ -1848,7 +1843,7 @@ void clear_all_state()
     metadex.clear();
     // my_pending.clear();
     ResetConsensusParams();
-    // ClearActivations();
+    ClearActivations();
     // ClearAlerts();
     // ClearFreezeState();
 
@@ -1878,7 +1873,6 @@ int mastercore_init()
         return 0;
     }
 
-    PrintToConsole("Initializing Omni Core v%s [%s]\n", OmniCoreVersion(), Params().NetworkIDString());
     PrintToLog("\nInitializing Omni Core v%s [%s]\n", OmniCoreVersion(), Params().NetworkIDString());
     PrintToLog("Startup time: %s\n", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", GetTime()));
 
@@ -1969,28 +1963,28 @@ int mastercore_init()
     // advance the waterline so that we start on the next unaccounted for block
     nWaterlineBlock += 1;
 
-    /*
+
     //collect the real Exodus balances available at the snapshot time
     //redundant? do we need to show it both pre-parse and post-parse?  if so let's label the printfs accordingly
-    if (msc_debug_exo) {
-        int64_t exodus_balance = getMPbalance(exodus_address, OMNI_PROPERTY_MSC, BALANCE);
-        PrintToLog("Exodus balance at start: %s\n", FormatDivisibleMP(exodus_balance));
-    }
+    // if (msc_debug_exo) {
+    //     int64_t exodus_balance = getMPbalance(exodus_address, OMNI_PROPERTY_MSC, BALANCE);
+    //     PrintToLog("Exodus balance at start: %s\n", FormatDivisibleMP(exodus_balance));
+    // }
 
-    load feature activation messages from txlistdb and process them accordingly
+    // load feature activation messages from txlistdb and process them accordingly
     p_txlistdb->LoadActivations(nWaterlineBlock);
 
     //load all alerts from levelDB (and immediately expire old ones)
-    p_txlistdb->LoadAlerts(nWaterlineBlock);
+    // p_txlistdb->LoadAlerts(nWaterlineBlock);
 
     //load the state of any freeable properties and frozen addresses from levelDB
-    if (!p_txlistdb->LoadFreezeState(nWaterlineBlock)) {
-        std::string strShutdownReason = "Failed to load freeze state from levelDB.  It is unsafe to continue.\n";
-        PrintToLog(strShutdownReason);
-        if (!GetBoolArg("-overrideforcedshutdown", false)) {
-            AbortNode(strShutdownReason, strShutdownReason);
-        }
-    } */
+    // if (!p_txlistdb->LoadFreezeState(nWaterlineBlock)) {
+    //     std::string strShutdownReason = "Failed to load freeze state from levelDB.  It is unsafe to continue.\n";
+    //     PrintToLog(strShutdownReason);
+    //     if (!GetBoolArg("-overrideforcedshutdown", false)) {
+    //         AbortNode(strShutdownReason, strShutdownReason);
+    //     }
+    // }
 
     // initial scan
     msc_initial_scan(nWaterlineBlock);
@@ -2090,8 +2084,9 @@ bool mastercore_handler_tx(CTransaction tx, int nBlock, unsigned int idx, const 
         if (interp_ret) PrintToLog("!!! interpretPacket() returned %d !!!\n", interp_ret);
 
         //NOTE: we need to return this number 1 from mp_obj.interpretPacket() (tx.cpp)
-        if (interp_ret == 1)
+        if (interp_ret == 1){
             HandleDExPayments(tx, nBlock, mp_obj.getSender());
+        }
 
         //  Only structurally valid transactions get recorded in levelDB
         //  PKT_ERROR - 2 = interpret_Transaction failed, structurally invalid payload
@@ -2749,16 +2744,16 @@ void CMPTxList::recordMetaDExCancelTX(const uint256 &txidMaster, const uint256 &
     }
 
     // Step 4 - Write sub-record with cancel details
-    // const string txidStr = txidMaster.ToString() + "-C";
-    // const string subKey = STR_REF_SUBKEY_TXID_REF_COMBO(txidStr, refNumber);
-    // const string subValue = strprintf("%s:%d:%lu", txidSub.ToString(), propertyId, nValue);
-    // Status subStatus;
-    // PrintToLog("METADEXCANCELDEBUG : Writing sub-record %s with value %s\n", subKey, subValue);
-    // if (pdb)
-    // {
-    //     subStatus = pdb->Put(writeoptions, subKey, subValue);
-    //     PrintToLog("METADEXCANCELDEBUG : %s(): %s, line %d, file: %s\n", __FUNCTION__, subStatus.ToString(), __LINE__, __FILE__);
-    // }
+    const string txidStr = txidMaster.ToString() + "-C";
+    const string subKey = STR_REF_SUBKEY_TXID_REF_COMBO(txidStr, refNumber);
+    const string subValue = strprintf("%s:%d:%lu", txidSub.ToString(), propertyId, nValue);
+    Status subStatus;
+    PrintToLog("METADEXCANCELDEBUG : Writing sub-record %s with value %s\n", subKey, subValue);
+    if (pdb)
+    {
+        subStatus = pdb->Put(writeoptions, subKey, subValue);
+        PrintToLog("METADEXCANCELDEBUG : %s(): %s, line %d, file: %s\n", __FUNCTION__, subStatus.ToString(), __LINE__, __FILE__);
+    }
 }
 
 /**
@@ -2822,16 +2817,16 @@ void CMPTxList::recordPaymentTX(const uint256 &txid, bool fValid, int nBlock, un
     }
 
     // Step 4 - Write sub-record with payment details
-    // const string txidStr = txid.ToString();
-    // const string subKey = STR_PAYMENT_SUBKEY_TXID_PAYMENT_COMBO(txidStr, paymentNumber);
-    // const string subValue = strprintf("%d:%s:%s:%d:%lu", vout, buyer, seller, propertyId, nValue);
-    // Status subStatus;
-    // PrintToLog("DEXPAYDEBUG : Writing sub-record %s with value %s\n", subKey, subValue);
-    // if (pdb)
-    // {
-    //     subStatus = pdb->Put(writeoptions, subKey, subValue);
-    //     PrintToLog("DEXPAYDEBUG : %s(): %s, line %d, file: %s\n", __FUNCTION__, subStatus.ToString(), __LINE__, __FILE__);
-    // }
+    const string txidStr = txid.ToString();
+    const string subKey = STR_PAYMENT_SUBKEY_TXID_PAYMENT_COMBO(txidStr, paymentNumber);
+    const string subValue = strprintf("%d:%s:%s:%d:%lu", vout, buyer, seller, propertyId, nValue);
+    Status subStatus;
+    PrintToLog("DEXPAYDEBUG : Writing sub-record %s with value %s\n", subKey, subValue);
+    if (pdb)
+    {
+        subStatus = pdb->Put(writeoptions, subKey, subValue);
+        PrintToLog("DEXPAYDEBUG : %s(): %s, line %d, file: %s\n", __FUNCTION__, subStatus.ToString(), __LINE__, __FILE__);
+    }
 }
 
 void CMPTxList::recordTX(const uint256 &txid, bool fValid, int nBlock, unsigned int type, uint64_t nValue)
