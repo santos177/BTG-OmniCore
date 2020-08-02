@@ -1684,19 +1684,6 @@ int CMPTransaction::logicMath_CreatePropertyVariable()
         return (PKT_ERROR_SP -21);
     }
 
-    if (IsFeatureActivated(FEATURE_SPCROWDCROSSOVER, block)) {
-    /**
-     * Ecosystem crossovers shall not be allowed after the feature was enabled.
-     */
-    if (isTestEcosystemProperty(ecosystem) != isTestEcosystemProperty(property)) {
-        PrintToLog("%s(): rejected: ecosystem %d of tokens to issue and desired property %d not in same ecosystem\n",
-                __func__,
-                ecosystem,
-                property);
-        return (PKT_ERROR_SP -50);
-    }
-    }
-
     if (!IsTransactionTypeAllowed(block, ecosystem, type, version)) {
         PrintToLog("%s(): rejected: type %d or version %d not permitted for property %d at block %d\n",
                 __func__,
@@ -1981,15 +1968,6 @@ int CMPTransaction::logicMath_GrantTokens()
 
     // Move the tokens
     assert(update_tally_map(receiver, property, nValue, BALANCE));
-
-    /**
-     * As long as the feature to disable the side effects of "granting tokens"
-     * is not activated, "granting tokens" can trigger crowdsale participations.
-     */
-    if (!IsFeatureActivated(FEATURE_GRANTEFFECTS, block)) {
-        // Is there an active crowdsale running from this recepient?
-        logicHelper_CrowdsaleParticipation();
-    }
 
     NotifyTotalTokensChanged(property, block);
 
@@ -2394,9 +2372,6 @@ int CMPTransaction::logicMath_Deactivation()
     // successful deactivation - did we deactivate the MetaDEx?  If so close out all trades
     if (feature_id == FEATURE_METADEX) {
         MetaDEx_SHUTDOWN();
-    }
-    if (feature_id == FEATURE_TRADEALLPAIRS) {
-        MetaDEx_SHUTDOWN_ALLPAIR();
     }
 
     return 0;
