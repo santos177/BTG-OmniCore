@@ -47,7 +47,7 @@ std::vector<TransactionRestriction> CConsensusParams::GetRestrictions() const
         { MSC_TYPE_TRADE_OFFER,               MP_TX_PKT_V1,  false,   MSC_DEX_BLOCK      },
         { MSC_TYPE_ACCEPT_OFFER_BTC,          MP_TX_PKT_V0,  false,   MSC_DEX_BLOCK      },
 
-        { MSC_TYPE_CREATE_PROPERTY_FIXED,     MP_TX_PKT_V0,  false,   MSC_SP_BLOCK       },
+        { MSC_TYPE_CREATE_PROPERTY_FIXED,     MP_TX_PKT_V0,  false,   MSC_FIXED_BLOCK    },
         { MSC_TYPE_CREATE_PROPERTY_VARIABLE,  MP_TX_PKT_V0,  false,   MSC_SP_BLOCK       },
         { MSC_TYPE_CREATE_PROPERTY_VARIABLE,  MP_TX_PKT_V1,  false,   MSC_SP_BLOCK       },
         { MSC_TYPE_CLOSE_CROWDSALE,           MP_TX_PKT_V0,  false,   MSC_SP_BLOCK       },
@@ -220,7 +220,7 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     GENESIS_BLOCK = 101;
     // Notice range for feature activations:
     MIN_ACTIVATION_BLOCKS = 5;
-    MAX_ACTIVATION_BLOCKS = 10;
+    MAX_ACTIVATION_BLOCKS = 200;
 
     // Script related:
     PUBKEYHASH_BLOCK = 0;
@@ -358,6 +358,7 @@ bool ActivateFeature(uint16_t featureId, int activationBlock, uint32_t minClient
     if ((activationBlock < (transactionBlock + params.MIN_ACTIVATION_BLOCKS)) ||
         (activationBlock > (transactionBlock + params.MAX_ACTIVATION_BLOCKS))) {
             PrintToLog("Feature activation of ID %d refused due to notice checks\n", featureId);
+            PrintToLog("activationBlock: %d, transactionBlock: %d, params.MIN_ACTIVATION_BLOCKS: %d, params.MAX_ACTIVATION_BLOCKS: %d\n",activationBlock, transactionBlock, params.MIN_ACTIVATION_BLOCKS, params.MAX_ACTIVATION_BLOCKS);
             return false;
     }
 
@@ -519,7 +520,6 @@ bool IsTransactionTypeAllowed(int txBlock, uint32_t txProperty, uint16_t txType,
     {
         const TransactionRestriction& entry = *it;
         if (entry.txType != txType || entry.txVersion != version) {
-            PrintToLog("%s(): first continue\n",__func__);
             continue;
         }
         // a property identifier of 0 (= BTC) may be used as wildcard
