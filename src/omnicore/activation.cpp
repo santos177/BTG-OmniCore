@@ -8,6 +8,7 @@
 
 #include "omnicore/activation.h"
 #include "omnicore/log.h"
+#include "omnicore/utilsbitcoin.h"
 #include "omnicore/version.h"
 
 #include "validation.h" //NOTE: after-> main.h
@@ -151,13 +152,14 @@ bool CheckActivationAuthorization(const std::string& sender)
       "16oDZYCspsczfgKXVj3xyvsxH21NpEj94F" // Adam Chamely - adam@omni.foundation - Project maintainer, developer
     ],
     */
-    whitelisted.insert("3Fc5gWzEQh1YGeqVXH6E4GDEGgbZJREJQ3");
+    // @Blackbox and @Santos multisig 2 to 2
+    whitelisted.insert("2N1qSKTU8nyuaNsfrUx7W6nzsNetmHanBMY");
 
-    // Testnet / Regtest
+    // Regtest
     // use -omniactivationallowsender for testing
 
     // Add manually whitelisted sources
-    if (gArgs.IsArgSet("-omniactivationallowsender")) {
+    if (gArgs.IsArgSet("-omniactivationallowsender") && RegTest()) {
         const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationallowsender");
 
         for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
@@ -166,7 +168,7 @@ bool CheckActivationAuthorization(const std::string& sender)
     }
 
     // Remove manually ignored sources
-    if (gArgs.IsArgSet("-omniactivationignoresender")) {
+    if (gArgs.IsArgSet("-omniactivationignoresender") && RegTest()) {
         const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationignoresender");
 
         for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
@@ -200,13 +202,14 @@ bool CheckDeactivationAuthorization(const std::string& sender)
     ],
     */
 
-    whitelisted.insert("34kwkVRSvFVEoUwcQSgpQ4ZUasuZ54DJLD");
+    // @Blackbox and @Santos multisig 2 to 2
+    whitelisted.insert("2N1qSKTU8nyuaNsfrUx7W6nzsNetmHanBMY");
 
-    // Testnet / Regtest
+    // Regtest
     // use -omniactivationallowsender for testing
 
     //Add manually whitelisted sources - custom sources affect both activation and deactivation
-    if (gArgs.IsArgSet("-omniactivationallowsender")) {
+    if (gArgs.IsArgSet("-omniactivationallowsender") && RegTest()) {
         const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationallowsender");
 
         for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
@@ -215,7 +218,7 @@ bool CheckDeactivationAuthorization(const std::string& sender)
     }
 
     // Remove manually ignored sources - custom sources affect both activation and deactivation
-    if (gArgs.IsArgSet("-omniactivationignoresender")) {
+    if (gArgs.IsArgSet("-omniactivationignoresender") && RegTest()) {
         const std::vector<std::string>& sources = gArgs.GetArgs("-omniactivationignoresender");
 
         for (std::vector<std::string>::const_iterator it = sources.begin(); it != sources.end(); ++it) {
