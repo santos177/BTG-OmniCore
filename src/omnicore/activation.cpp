@@ -153,7 +153,7 @@ bool CheckActivationAuthorization(const std::string& sender)
     ],
     */
     // @Blackbox and @Santos multisig 2 to 2
-    whitelisted.insert("2N1qSKTU8nyuaNsfrUx7W6nzsNetmHanBMY");
+    whitelisted.insert("2N9doCzp1z2vDe9Go3sxeVTZ4YsNTBEzed3");
 
     // Regtest
     // use -omniactivationallowsender for testing
@@ -203,7 +203,7 @@ bool CheckDeactivationAuthorization(const std::string& sender)
     */
 
     // @Blackbox and @Santos multisig 2 to 2
-    whitelisted.insert("2N1qSKTU8nyuaNsfrUx7W6nzsNetmHanBMY");
+    whitelisted.insert("2N9doCzp1z2vDe9Go3sxeVTZ4YsNTBEzed3");
 
     // Regtest
     // use -omniactivationallowsender for testing

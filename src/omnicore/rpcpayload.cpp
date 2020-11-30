@@ -686,6 +686,36 @@ UniValue omni_createpayload_unfreeze(const JSONRPCRequest& request)
     return HexStr(payload.begin(), payload.end());
 }
 
+
+UniValue omni_createpayload_sendactivation(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 3)
+        throw runtime_error(
+            "omni_createpayload_sendactivation featureid block minclientversion\n"
+            "\nActivate a protocol feature.\n"
+            "\nNote: Omni Core ignores activations from unauthorized sources.\n"
+            "\nArguments:\n"
+            "1. featureid            (number, required) the identifier of the feature to activate\n"
+            "2. block                (number, required) the activation block\n"
+            "3. minclientversion     (number, required) the minimum supported client version\n"
+            "\nResult:\n"
+            "\"hash\"                  (string) the hex-encoded transaction hash\n"
+            "\nExamples:\n"
+            + HelpExampleCli("omni_createpayload_sendactivation", "\"1 370000 999")
+            + HelpExampleRpc("omni_createpayload_sendactivation", "\"1, 370000, 999")
+        );
+
+    // obtain parameters & info
+    uint16_t featureId = request.params[0].get_int();
+    uint32_t activationBlock = request.params[1].get_int();
+    uint32_t minClientVersion = request.params[2].get_int();
+
+    // create a payload for the transaction
+    std::vector<unsigned char> payload = CreatePayload_ActivateFeature(featureId, activationBlock, minClientVersion);
+
+    return HexStr(payload.begin(), payload.end());
+}
+
 static const CRPCCommand commands[] =
 { //  category                         name                                      actor (function)                         okSafeMode
   //  -------------------------------- ----------------------------------------- ---------------------------------------- ----------
@@ -709,6 +739,7 @@ static const CRPCCommand commands[] =
     { "omni layer (payload creation)", "omni_createpayload_disablefreezing",     &omni_createpayload_disablefreezing,     true, {} },
     { "omni layer (payload creation)", "omni_createpayload_freeze",              &omni_createpayload_freeze,              true, {} },
     { "omni layer (payload creation)", "omni_createpayload_unfreeze",            &omni_createpayload_unfreeze,            true, {} },
+    { "omni layer (payload creation)", "omni_createpayload_sendactivation",      &omni_createpayload_sendactivation,      true, {} },
 };
 
 void RegisterOmniPayloadCreationRPCCommands(CRPCTable &tableRPC)
