@@ -628,11 +628,9 @@ int mastercore::GetEncodingClass(const CTransaction& tx, int nBlock)
     }
 
     if (hasOpReturn) {
-        PrintToLog("getEncodingClass:OMNI_CLASS_C\n");
         return OMNI_CLASS_C;
     }
 
-    PrintToLog("getEncodingClass:NO_MARKER\n");
     return NO_MARKER;
 }
 
